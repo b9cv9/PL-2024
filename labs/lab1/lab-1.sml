@@ -17,8 +17,8 @@ use "lab-1-use.sml";
  ******************************************************************************)
 fun isLeapYear (year : int, isJulian : bool) : bool =
   if isJulian then year mod 4 = 0
-  else (year mod 400 = 0)
-  orelse (year mod 100 <> 0 andalso year mod 4 = 0)
+  else year mod 400 = 0
+  orelse year mod 100 <> 0 andalso year mod 4 = 0
 
 (******************************************************************************)
 
@@ -35,7 +35,7 @@ fun isLongMonth (month : int) : bool =
   Задание 3 daysInMonth
  ******************************************************************************)
 fun daysInMonth (d : date, isJulian : bool) : int =
-  if (#2 d = 2 andalso isLeapYear(#3 d, isJulian)) 
+  if (#2 d = 2 andalso isLeapYear (#3 d, isJulian)) 
   then 29
   else if #2 d = 2 
   then 28
@@ -49,7 +49,7 @@ fun daysInMonth (d : date, isJulian : bool) : int =
   Задание 4 isDayOK
  ******************************************************************************)
 fun isDayOK (d : date, isJulian : bool) : bool =
-  not (#1 d < 1 orelse #1 d > daysInMonth(d, isJulian))
+  not (#1 d < 1 orelse #1 d > daysInMonth (d, isJulian))
 
 (******************************************************************************)
 
@@ -65,73 +65,113 @@ fun isMonthOK (d : date) : bool =
   Задание 6 isCorrectDate
  ******************************************************************************)
 fun isCorrectDate (d : date, isJulian : bool) : bool =
-  isDayOK(d, isJulian) andalso isMonthOK(d)
+  isDayOK (d, isJulian) andalso isMonthOK d
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 7 incDateByNum
  ******************************************************************************)
 fun incDateByNum (d : date, days : int, isJulian : bool) : date =
-  if #1 d + days <= daysInMonth (d, isJulian)
-  then MyDate.anotherDay(d, #1 d + days) 
-  else if #2 d < 12 
-  then incDateByNum( (1, #2 d + 1, #3 d)
-                   , days - daysInMonth(d, isJulian) + #1 d - 1
-                   , isJulian
-                   )
-  else incDateByNum( (1, 1, #3 d + 1)
-                   , days - daysInMonth(d, isJulian) + #1 d - 1
-                   , isJulian
-                   )
+  let
+    val day = #1 d
+    val dayPlusDays = day + days
+  in
+    if dayPlusDays <= daysInMonth (d, isJulian)
+    then MyDate.anotherDay (d, dayPlusDays) 
+    else 
+      let
+        val dayMinus1 = day - 1
+        val month = #2 d
+        val year = #3 d
+      in
+        if month < 12 then 
+          incDateByNum( (1, month + 1, year)
+                      , days - daysInMonth (d, isJulian) + dayMinus1
+                      , isJulian
+                      )
+        else 
+          incDateByNum( (1, 1, year + 1)
+                      , days - daysInMonth (d, isJulian) + dayMinus1
+                      , isJulian
+                      )
+      end
+  end
+
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 8 decDateByNum
  ******************************************************************************)
-fun decDateByNum (d : date, days : int, isJulian : bool) : date =
-  if #1 d - days > 0
-  then MyDate.anotherDay(d, #1 d - days) 
-  else if #2 d > 1 
-  then decDateByNum( (daysInMonth((#1 d, #2 d - 1, #3 d), isJulian)
-                     , #2 d - 1
-                     , #3 d
-                     )
-                   , days - #1 d
-                   , isJulian
-                   )
-  else decDateByNum( (31, 12, #3 d - 1)
-                   , days - #1 d
-                   , isJulian
-                   )
+fun decDateByNum (d : date, daysMinus : int, isJulian : bool) : date =
+  let
+    val day = #1 d
+    val daysDiff = day - daysMinus
+  in
+    if daysDiff > 0 then 
+      MyDate.anotherDay (d, daysDiff) 
+    else
+      let
+        val year = #3 d
+        val daysMinusDay = daysMinus - day
+        val monthMinus1 = #2 d - 1
+      in
+        if monthMinus1 + 1 > 1 then 
+          decDateByNum ( (daysInMonth ((day, monthMinus1, year), isJulian)
+                         , monthMinus1, year
+                         )
+                       , daysMinusDay, isJulian
+                       )
+        else 
+          decDateByNum ( (31, 12, year - 1), daysMinusDay, isJulian)
+      end
+  end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 9 newStyleCorrection
  ******************************************************************************)
-
+fun newStyleCorrection (date : date) : int =
+  let
+    val year = #3 date
+    val month = #2 date
+    val century = year div 100
+    val daysDiff = century - century div 4 - 2
+  in
+    if (month > 2 orelse (month = 2 andalso #1 date = 29 
+                                    orelse year mod 100 > 0))
+    then daysDiff
+    else daysDiff - 1
+  end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 10 toJulianDay
  ******************************************************************************)
-
+fun toJulianDay (grigDate : date) : date =
+  decDateByNum (grigDate, newStyleCorrection (grigDate), false)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 11 toGrigorianDay
  ******************************************************************************)
-
+fun toGrigorianDay (julianDate : date) : date =
+  incDateByNum (julianDate, newStyleCorrection (julianDate), true)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 12 younger
  ******************************************************************************)
-
+(*fun younger (date1 : date, date2 : date) : bool =
+  let
+    fun max (x : int, y : int) : c =
+  in
+    body
+  end*)
 
 (******************************************************************************)
 
