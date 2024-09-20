@@ -38,10 +38,10 @@ fun daysInMonth (d : date, isJulian : bool) : int =
   if (#2 d = 2 andalso isLeapYear (#3 d, isJulian)) 
   then 29
   else if #2 d = 2 
-  then 28
-  else if isLongMonth (#2 d)
-  then 31
-  else 30
+       then 28
+       else if isLongMonth (#2 d)
+            then 31
+            else 30
 
 (******************************************************************************)
 
@@ -80,20 +80,13 @@ fun incDateByNum (d : date, days : int, isJulian : bool) : date =
     then MyDate.anotherDay (d, dayPlusDays) 
     else 
       let
-        val dayMinus1 = day - 1
         val month = #2 d
         val year = #3 d
+        val newDays = days - daysInMonth (d, isJulian) + day - 1
       in
-        if month < 12 then 
-          incDateByNum( (1, month + 1, year)
-                      , days - daysInMonth (d, isJulian) + dayMinus1
-                      , isJulian
-                      )
-        else 
-          incDateByNum( (1, 1, year + 1)
-                      , days - daysInMonth (d, isJulian) + dayMinus1
-                      , isJulian
-                      )
+        if month < 12 then
+          incDateByNum( (1, month + 1, year), newDays, isJulian)
+        else incDateByNum( (1, 1, year + 1), newDays, isJulian)
       end
   end
 
@@ -122,8 +115,7 @@ fun decDateByNum (d : date, daysMinus : int, isJulian : bool) : date =
                          )
                        , daysMinusDay, isJulian
                        )
-        else 
-          decDateByNum ( (31, 12, year - 1), daysMinusDay, isJulian)
+        else decDateByNum ( (31, 12, year - 1), daysMinusDay, isJulian)
       end
   end
 
@@ -139,8 +131,8 @@ fun newStyleCorrection (date : date) : int =
     val century = year div 100
     val daysDiff = century - century div 4 - 2
   in
-    if (month > 2 orelse (month = 2 andalso #1 date = 29 
-                                    orelse year mod 100 > 0))
+      if year mod 100 > 0 orelse month > 2 orelse month = 2
+                          andalso #1 date = 29
     then daysDiff
     else daysDiff - 1
   end
@@ -166,33 +158,52 @@ fun toGrigorianDay (julianDate : date) : date =
 (****************************************************************************** 
   Задание 12 younger
  ******************************************************************************)
-(*fun younger (date1 : date, date2 : date) : bool =
+fun younger (date1 : date, date2 : date) : bool =
   let
-    fun max (x : int, y : int) : c =
+    val y1 = #3 date1
+    val y2 = #3 date2
+    val m1 = #2 date1
+    val m2 = #2 date2
   in
-    body
-  end*)
+    if y1 <> y2      then y1 > y2
+    else if m1 <> m2 then m1 > m2
+    else #1 date1 > #1 date2
+  end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 13 youngest
  ******************************************************************************)
-
+(*fun youngest (l : (string * date) list) : (string * date) option =
+  if null l then NONE
+  else
+    let
+      val head = #2 (hd l)
+      val newHead = #2 (hd (tl l))
+    in
+      if younger (head, newHead) then result
+    end*)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 14 getNthFixed
  ******************************************************************************)
-
-
+fun getNthFixed (values : int * fixed list) : fixed =
+  let val n = #1 values
+      val l = #2 values
+  in
+    if n = 0 then hd (l) else getNthFixed (n - 1, tl l)
+  end
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 15 numToDigits
  ******************************************************************************)
-
+fun numToDigits (ntg : int * int) : int list =
+  if #2 ntg = null then []
+  else (#1 ntg mod 10) :: numToDigits (#1 ntg div 10, #2 ntg - 1)
 
 (******************************************************************************)
 
@@ -206,7 +217,9 @@ fun toGrigorianDay (julianDate : date) : date =
 (****************************************************************************** 
   Задание 17 listSum
  ******************************************************************************)
-
+fun listSum (fl : fixed list) : fixed =
+  if null fl then 0
+  else hd fl + listSum (tl fl)
 
 (******************************************************************************)
 
