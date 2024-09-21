@@ -175,14 +175,15 @@ fun younger (date1 : date, date2 : date) : bool =
 (****************************************************************************** 
   Задание 13 youngest
  ******************************************************************************)
-(*fun youngest (l : (string * date) list) : (string * date) option =
+(*fun youngest (l : (string * date) list) : date =
   if null l then NONE
   else
     let
       val head = #2 (hd l)
       val newHead = #2 (hd (tl l))
     in
-      if younger (head, newHead)
+      if younger (head, newHead) then head
+      else youngest (tl l)
     end*)
 
 (******************************************************************************)
@@ -205,7 +206,7 @@ fun numToDigits (ntg : int * int) : int list =
   let
     val secondValue = #2 ntg
   in
-    if secondValue = 0      then []
+    if secondValue = 0 then []
     else 
       let val firstValue = #1 ntg
           val secValMinus1 = secondValue - 1
@@ -249,14 +250,20 @@ fun listSum (fl : fixed list) : fixed =
 (****************************************************************************** 
   Задание 18 maxSmaller
  ******************************************************************************)
-(*fun maxSmaller (l : fixed list * fixed) : fixed = 
-  if #1 l = null then 0
+fun maxSmaller (l : fixed list * fixed) : fixed = 
+  if null (#1 l) then 0
   else 
     let
-      val name = value
+      val amount = #2 l
+      val listWithElements = #1 l
+      val maxTail = maxSmaller (tl (listWithElements), amount)
+      val head = hd (listWithElements)
     in
-      
-    end*)
+      if head < amount then
+        if head > maxTail then head else maxTail
+      else
+        maxTail
+    end
 
 (******************************************************************************)
 
@@ -271,7 +278,24 @@ fun dateToCorrectionNums (d : date) : int list =
 (****************************************************************************** 
   Задание 20 firstNewMoon
  ******************************************************************************)
-
+fun firstNewMoon (actDate : date) : (fixed * date) option =
+  let
+    val d = #1 actDate
+    val m = #2 actDate
+    val y = #3 actDate
+    fun checkMonth (m : int, y : int) = if m < 3 then y - 1 else y
+    val correctionNums = dateToCorrectionNums (d, m, checkMonth(m, y))
+    val summ = listSum (listElements (correctionNums, corrections))
+    val diff = Fixed.fromInt (newStyleCorrection actDate)
+    val totalSum = diff + summ
+    val reduction = maxSmaller (reductions, totalSum - Fixed.fromInt 1)
+    val fnum = if reduction = 0 then totalSum else totalSum - reduction
+    val newDate = (Fixed.toInt fnum, m, y)
+  in
+    if isCorrectDate (newDate, false)
+    then SOME (fnum, newDate)
+    else NONE
+  end
 
 (******************************************************************************)
 
