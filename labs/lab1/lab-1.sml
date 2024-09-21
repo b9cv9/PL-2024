@@ -202,16 +202,39 @@ fun getNthFixed (values : int * fixed list) : fixed =
   Задание 15 numToDigits
  ******************************************************************************)
 fun numToDigits (ntg : int * int) : int list =
-  if #2 ntg = null then []
-  else (#1 ntg mod 10) :: numToDigits (#1 ntg div 10, #2 ntg - 1)
+  let
+    val secondValue = #2 ntg
+  in
+    if secondValue = 0      then []
+    else 
+      let val firstValue = #1 ntg
+          val secValMinus1 = secondValue - 1
+      in
+        if firstValue = 0 then
+          0 :: numToDigits (0, secValMinus1)
+        else
+          (firstValue mod 10) :: numToDigits (firstValue div 10
+                                             , secValMinus1
+                                             )
+      end
+  end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 16 listElements
  ******************************************************************************)
-
-
+fun listElements (dl : int list * fixed list list) : fixed list =
+  let val firstL = #1 dl
+  in
+    if firstL = [] then []
+    else
+      let val secL = #2 dl
+      in
+        getNthFixed (hd (firstL), hd (secL)) 
+        :: listElements (tl (firstL), tl (secL))
+      end
+  end
 (******************************************************************************)
 
 (****************************************************************************** 
