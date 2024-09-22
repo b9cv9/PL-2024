@@ -75,18 +75,19 @@ fun incDateByNum (d : date, days : int, isJulian : bool) : date =
   let
     val day = #1 d
     val dayPlusDays = day + days
+    val daysInM = daysInMonth (d, isJulian)
   in
-    if dayPlusDays <= daysInMonth (d, isJulian)
+    if dayPlusDays <= daysInM
     then MyDate.anotherDay (d, dayPlusDays) 
     else 
       let
         val month = #2 d
         val year = #3 d
-        val newDays = days - daysInMonth (d, isJulian) + day - 1
+        val newDays = days - daysInM + day - 1
       in
         if month < 12 then
-          incDateByNum( (1, month + 1, year), newDays, isJulian)
-        else incDateByNum( (1, 1, year + 1), newDays, isJulian)
+          incDateByNum ((1, month + 1, year), newDays, isJulian)
+        else incDateByNum ((1, 1, year + 1), newDays, isJulian)
       end
   end
 
@@ -115,7 +116,7 @@ fun decDateByNum (d : date, daysMinus : int, isJulian : bool) : date =
                          )
                        , daysMinusDay, isJulian
                        )
-        else decDateByNum ( (31, 12, year - 1), daysMinusDay, isJulian)
+        else decDateByNum ((31, 12, year - 1), daysMinusDay, isJulian)
       end
   end
 
@@ -131,8 +132,8 @@ fun newStyleCorrection (date : date) : int =
     val century = year div 100
     val daysDiff = century - century div 4 - 2
   in
-      if year mod 100 > 0 orelse month > 2 orelse month = 2
-                          andalso #1 date = 29
+    if year mod 100 > 0 orelse month > 2 orelse month = 2
+                        andalso #1 date = 29
     then daysDiff
     else daysDiff - 1
   end
@@ -143,7 +144,7 @@ fun newStyleCorrection (date : date) : int =
   Задание 10 toJulianDay
  ******************************************************************************)
 fun toJulianDay (grigDate : date) : date =
-  decDateByNum (grigDate, newStyleCorrection (grigDate), false)
+  decDateByNum (grigDate, newStyleCorrection grigDate, false)
 
 (******************************************************************************)
 
@@ -151,7 +152,7 @@ fun toJulianDay (grigDate : date) : date =
   Задание 11 toGrigorianDay
  ******************************************************************************)
 fun toGrigorianDay (julianDate : date) : date =
-  incDateByNum (julianDate, newStyleCorrection (julianDate), true)
+  incDateByNum (julianDate, newStyleCorrection julianDate, true)
 
 (******************************************************************************)
 
@@ -177,15 +178,20 @@ fun younger (date1 : date, date2 : date) : bool =
  ******************************************************************************)
 fun youngest (l : (string * date) list) : (string * date) option =
   if null l then NONE
-  else if null (tl l) then SOME (hd l)
-  else
+  else 
     let
-      val SOME res = youngest (tl l)
+      val head = hd l
+      val tail = tl l
     in
-      if younger (#2 (hd l), #2 res) then
-        SOME (hd l)
+      if null tail then SOME head
       else
-        SOME res
+        let
+          val SOME res = youngest tail
+        in
+          if younger (#2 head, #2 res)
+          then SOME head
+          else SOME res
+        end
     end
 
 (******************************************************************************)
@@ -193,51 +199,28 @@ fun youngest (l : (string * date) list) : (string * date) option =
 (****************************************************************************** 
   Задание 14 getNthFixed
  ******************************************************************************)
-fun getNthFixed (values : int * fixed list) : fixed =
-  let val n = #1 values
-      val l = #2 values
-  in
-    if n = 0 then hd (l) else getNthFixed (n - 1, tl l)
-  end
+fun getNthFixed (n : int, l : fixed list) : fixed =
+  if n = 0 then hd l 
+  else getNthFixed (n - 1, tl l)
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 15 numToDigits
  ******************************************************************************)
-fun numToDigits (ntg : int * int) : int list =
-  let
-    val secondValue = #2 ntg
-  in
-    if secondValue = 0 then []
-    else 
-      let val firstValue = #1 ntg
-          val secValMinus1 = secondValue - 1
-      in
-        if firstValue = 0 then
-          0 :: numToDigits (0, secValMinus1)
-        else
-          (firstValue mod 10) :: numToDigits (firstValue div 10
-                                             , secValMinus1
-                                             )
-      end
-  end
+fun numToDigits (num : int, numDigits : int) : int list =
+  if numDigits = 0 then []
+  else (if num = 0 then 0 else num mod 10)
+       :: numToDigits (num div 10, numDigits - 1)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 16 listElements
  ******************************************************************************)
-fun listElements (dl : int list * fixed list list) : fixed list =
-  let val firstL = #1 dl
-  in
-    if firstL = [] then []
-    else
-      let val secL = #2 dl
-      in
-        getNthFixed (hd (firstL), hd (secL)) 
-        :: listElements (tl (firstL), tl (secL))
-      end
-  end
+fun listElements (firstL : int list, secL : fixed list list) : fixed list =
+  if firstL = [] then []
+  else getNthFixed (hd (firstL), hd (secL)) 
+       :: listElements (tl (firstL), tl (secL))
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -252,14 +235,12 @@ fun listSum (fl : fixed list) : fixed =
 (****************************************************************************** 
   Задание 18 maxSmaller
  ******************************************************************************)
-fun maxSmaller (l : fixed list * fixed) : fixed = 
-  if null (#1 l) then 0
+fun maxSmaller (l : fixed list, amount : fixed) : fixed = 
+  if null l then 0
   else 
     let
-      val amount = #2 l
-      val listWithElements = #1 l
-      val maxTail = maxSmaller (tl (listWithElements), amount)
-      val head = hd (listWithElements)
+      val maxTail = maxSmaller (tl l, amount)
+      val head = hd l
     in
       if head < amount then
         if head > maxTail then head else maxTail
@@ -282,11 +263,11 @@ fun dateToCorrectionNums (d : date) : int list =
  ******************************************************************************)
 fun firstNewMoon (actDate : date) : (fixed * date) option =
   let
-    val d = #1 actDate
     val m = #2 actDate
     val y = #3 actDate
     fun checkMonth (m : int, y : int) = if m < 3 then y - 1 else y
-    val correctionNums = dateToCorrectionNums (d, m, checkMonth(m, y))
+    val correctionNums = 
+      dateToCorrectionNums (#1 actDate, m, checkMonth(m, y))
     val summ = listSum (listElements (correctionNums, corrections))
     val diff = Fixed.fromInt (newStyleCorrection actDate)
     val totalSum = diff + summ
@@ -320,17 +301,17 @@ fun winterSolstice (year : int) : date =
 fun chineseNewYearDate (y : int) : date =
   let
     val yMinus1 = y - 1
-    val (dayFixed, dateNewMoon) = valOf (firstNewMoon (1, 12, yMinus1))
+    val dayFixed = #1 (valOf (firstNewMoon (1, 12, yMinus1)))
   in
     if younger ( (Fixed.toInt dayFixed, 12, yMinus1)
                , winterSolstice (yMinus1)
                ) 
-    then incDateByNum( (Fixed.toInt dayFixed, 12, yMinus1)
-                     , Fixed.toInt 2953059, false
-                     )
-    else incDateByNum( (Fixed.toInt dayFixed, 12, yMinus1)
-                     , Fixed.toInt 5906118, false
-                     )
+    then incDateByNum ( (Fixed.toInt dayFixed, 12, yMinus1)
+                      , Fixed.toInt 2953059, false
+                      )
+    else incDateByNum ( (Fixed.toInt dayFixed, 12, yMinus1)
+                      , Fixed.toInt 5906118, false
+                      )
   end
 
 (******************************************************************************)
@@ -338,12 +319,9 @@ fun chineseNewYearDate (y : int) : date =
 (****************************************************************************** 
   Задание 23 getNthString
  ******************************************************************************)
-fun getNthString (strs : int * string list) : string =
-  let val n = #1 strs
-      val l = #2 strs
-  in
-    if n = 0 then hd l else getNthString (n - 1, tl l)
-  end
+fun getNthString (n : int, l : string list) : string =
+  if n = 0 then hd l 
+  else getNthString (n - 1, tl l)
 
 (******************************************************************************)
 
@@ -417,18 +395,18 @@ fun animal (l : string * date) : string =
 (****************************************************************************** 
   Задание 29 extractAnimal
  ******************************************************************************)
-fun extractAnimal (l : (string * date) list * string)
+fun extractAnimal (l : (string * date) list, animalName : string)
                   : (string * date) list = 
-  if null (#1 l) then []
+  if null l then []
   else
     let
-      val birthDate = #2 (hd (#1 l))
-      val rest = tl (#1 l)
+      val birthDate = #2 (hd l)
+      val tail = tl l
     in
-      if dateToAnimal birthDate = #2 l then
-        (#1 (hd (#1 l)), birthDate) :: extractAnimal (rest, #2 l)
+      if dateToAnimal birthDate = animalName then
+        (#1 (hd l), birthDate) :: extractAnimal (tail, animalName)
       else
-        extractAnimal (rest, #2 l)
+        extractAnimal (tail, animalName)
     end
 
 (******************************************************************************)
@@ -436,22 +414,21 @@ fun extractAnimal (l : (string * date) list * string)
 (****************************************************************************** 
   Задание 30 extractAnimals
  ******************************************************************************)
-fun extractAnimals (l : (string * date) list * string list) 
+fun extractAnimals (l1 : (string * date) list, l2 : string list) 
                    : (string * date) list =
-  if null (#1 l) orelse null (#2 l) then []
+  if null l1 orelse null l2 then []
   else
-    extractAnimal (#1 l, hd (#2 l)) @ extractAnimals (#1 l, tl (#2 l))
-
+    extractAnimal (l1, hd l2) @ extractAnimals (l1, tl l2)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 31 youngestFromAnimals
  ******************************************************************************)
-fun youngestFromAnimals (l : (string * date) list * string list)
+fun youngestFromAnimals (l1 : (string * date) list, l2 : string list)
                         : (string * date) option =
   let
-    val studentsList = extractAnimals l
+    val studentsList = extractAnimals (l1, l2)
   in
     if null studentsList then NONE
     else youngest studentsList
@@ -466,20 +443,23 @@ fun oldStyleStudents (l : (string * date) list)
                      : (string * date) list =
   if null l then [] 
   else
-    (#1 (hd l), toGrigorianDay (#2 (hd l))) 
-    :: oldStyleStudents (tl l)
+    let
+      val head = hd l
+    in
+      (#1 head, toGrigorianDay (#2 head)) 
+      :: oldStyleStudents (tl l)
+    end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 33 youngestFromOldStyleAnimals
  ******************************************************************************)
-fun youngestFromOldStyleAnimals (l : (string * date) list * string list)
+fun youngestFromOldStyleAnimals (l1 : (string * date) list, l2 : string list)
                                 : (string * date) option =
   let
-     val grigDateAns = valOf (youngestFromAnimals 
-                              (oldStyleStudents (#1 l), #2 l)
-                             )
+    val grigDateAns = 
+      valOf (youngestFromAnimals (oldStyleStudents l1, l2))
    in
      SOME (#1 grigDateAns, toJulianDay (#2 grigDateAns))
    end
@@ -493,7 +473,11 @@ fun listOfStringDates (l : (string * date) list)
                       : (string * string) list =
   if null l then []
   else
-    (#1 (hd l),dateToString (#2 (hd l))) :: listOfStringDates (tl l)
+    let
+      val head = hd l
+    in
+      (#1 head, dateToString (#2 head)) :: listOfStringDates (tl l)
+    end
 
 (******************************************************************************)
 
