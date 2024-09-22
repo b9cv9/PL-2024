@@ -175,16 +175,18 @@ fun younger (date1 : date, date2 : date) : bool =
 (****************************************************************************** 
   Задание 13 youngest
  ******************************************************************************)
-(*fun youngest (l : (string * date) list) : date =
+fun youngest (l : (string * date) list) : (string * date) option =
   if null l then NONE
+  else if null (tl l) then SOME (hd l)
   else
     let
-      val head = #2 (hd l)
-      val newHead = #2 (hd (tl l))
+      val SOME res = youngest (tl l)
     in
-      if younger (head, newHead) then head
-      else youngest (tl l)
-    end*)
+      if younger (#2 (hd l), #2 res) then
+        SOME (hd l)
+      else
+        SOME res
+    end
 
 (******************************************************************************)
 
@@ -315,7 +317,21 @@ fun winterSolstice (year : int) : date =
 (****************************************************************************** 
   Задание 22 chineseNewYearDate
  ******************************************************************************)
-
+fun chineseNewYearDate (y : int) : date =
+  let
+    val yMinus1 = y - 1
+    val (dayFixed, dateNewMoon) = valOf (firstNewMoon (1, 12, yMinus1))
+  in
+    if younger ( (Fixed.toInt dayFixed, 12, yMinus1)
+               , winterSolstice (yMinus1)
+               ) 
+    then incDateByNum( (Fixed.toInt dayFixed, 12, yMinus1)
+                     , Fixed.toInt 2953059, false
+                     )
+    else incDateByNum( (Fixed.toInt dayFixed, 12, yMinus1)
+                     , Fixed.toInt 5906118, false
+                     )
+  end
 
 (******************************************************************************)
 
@@ -326,7 +342,7 @@ fun getNthString (strs : int * string list) : string =
   let val n = #1 strs
       val l = #2 strs
   in
-    if n = 0 then hd (l) else getNthString (n - 1, tl l)
+    if n = 0 then hd l else getNthString (n - 1, tl l)
   end
 
 (******************************************************************************)
@@ -345,41 +361,86 @@ fun dateToString (d : date) : string =
 (****************************************************************************** 
   Задание 25 chineseYear
  ******************************************************************************)
+fun chineseYear (y : int) : string * string * string * string =
+  let
+    val cycleYear = (y + 2396) mod 60
+    val celestialIndex = cycleYear mod 10
+    val terrestrialIndex = cycleYear mod 12
 
+    val celestialName = getNthString (celestialIndex, celestialChi)
+    val colorName = getNthString (celestialIndex div 2, celestialColor)
+    val terrestrialName = getNthString (terrestrialIndex, terrestrialChi)
+    val animalName = getNthString (terrestrialIndex, terrestrialEng)
+    val celestialEngName = getNthString (celestialIndex, celestialEng)
+  in
+    (celestialName ^ "-" ^ terrestrialName
+    , colorName, animalName, celestialEngName
+    )
+  end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 26 dateToChineseYear
  ******************************************************************************)
-
+fun dateToChineseYear (d : date) : string * string * string * string =
+  let
+    val month = #2 d
+    val year = #3 d
+    val chineNYD = chineseNewYearDate (#3 d)
+    val chineNYDMonth = #2 chineNYD
+  in
+    if month < chineNYDMonth orelse month = chineNYDMonth
+                             andalso #1 d < #1 chineNYD
+    then chineseYear (year - 1)
+    else chineseYear year
+  end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 27 dateToAnimal
  ******************************************************************************)
-
+fun dateToAnimal (d : date) : string =
+  #3 (dateToChineseYear d)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 28 animal
  ******************************************************************************)
-
+fun animal (l : string * date) : string =
+  dateToAnimal (#2 l)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 29 extractAnimal
  ******************************************************************************)
-
+fun extractAnimal (l : (string * date) list * string)
+                  : (string * date) list = 
+  if null (#1 l) then []
+  else
+    let
+      val birthDate = #2 (hd (#1 l))
+      val rest = tl (#1 l)
+    in
+      if dateToAnimal birthDate = #2 l then
+        (#1 (hd (#1 l)), birthDate) :: extractAnimal (rest, #2 l)
+      else
+        extractAnimal (rest, #2 l)
+    end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 30 extractAnimals
  ******************************************************************************)
+fun extractAnimals (l : (string * date) list * string list) 
+                   : (string * date) list =
+  if null (#1 l) orelse null (#2 l) then []
+  else
+    extractAnimal (#1 l, hd (#2 l)) @ extractAnimals (#1 l, tl (#2 l))
 
 
 (******************************************************************************)
@@ -387,35 +448,60 @@ fun dateToString (d : date) : string =
 (****************************************************************************** 
   Задание 31 youngestFromAnimals
  ******************************************************************************)
-
+fun youngestFromAnimals (l : (string * date) list * string list)
+                        : (string * date) option =
+  let
+    val studentsList = extractAnimals l
+  in
+    if null studentsList then NONE
+    else youngest studentsList
+  end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 32 oldStyleStudents
  ******************************************************************************)
-
+fun oldStyleStudents (l : (string * date) list) 
+                     : (string * date) list =
+  if null l then [] 
+  else
+    (#1 (hd l), toGrigorianDay (#2 (hd l))) 
+    :: oldStyleStudents (tl l)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 33 youngestFromOldStyleAnimals
  ******************************************************************************)
-
+fun youngestFromOldStyleAnimals (l : (string * date) list * string list)
+                                : (string * date) option =
+  let
+     val grigDateAns = valOf (youngestFromAnimals 
+                              (oldStyleStudents (#1 l), #2 l)
+                             )
+   in
+     SOME (#1 grigDateAns, toJulianDay (#2 grigDateAns))
+   end
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 34 listOfStringDates
  ******************************************************************************)
-
+fun listOfStringDates (l : (string * date) list) 
+                      : (string * string) list =
+  if null l then []
+  else
+    (#1 (hd l),dateToString (#2 (hd l))) :: listOfStringDates (tl l)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 35 oldStyleStudentStringDates
  ******************************************************************************)
-
+fun oldStyleStudentStringDates (l : (string * date) list)
+                               : (string * string) list =
+  listOfStringDates (oldStyleStudents (l))
 
 (******************************************************************************)
-
