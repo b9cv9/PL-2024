@@ -76,6 +76,7 @@ val test5_IsMonthOK3 = isMonthOK (1,13,2020) = false
 val test6_IsCorrectDate1 = isCorrectDate ((1,9,2016), true) = true
 val test6_IsCorrectDate2 = isCorrectDate ((21,13,1900), false) = false
 val test6_IsCorrectDate3 = isCorrectDate ((~12,3,1857), false) = false
+val test6_IsCorrectDate4 = isCorrectDate ((1, 1, ~5), true) = false
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -109,6 +110,8 @@ val test9_NewStyleCorrection4 = newStyleCorrection (28,2,3400) = 23
 val test9_NewStyleCorrection5 = newStyleCorrection (28,2,3701) = 26
 val test9_NewStyleCorrection6 = newStyleCorrection (29,2,4000) = 28
 val test9_NewStyleCorrection7 = newStyleCorrection (28,3,4000) = 28
+val test9_NewStyleCorrection8 = newStyleCorrection (1, 1, 400) = 1
+val test9_NewStyleCorrection9 = newStyleCorrection (1, 3, 300) = 1
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -117,6 +120,7 @@ val test9_NewStyleCorrection7 = newStyleCorrection (28,3,4000) = 28
 val test10_ToJulianDay1 = toJulianDay (7,1,2016) = (25,12,2015)
 val test10_ToJulianDay2 = toJulianDay (14,1,2021) = (1,1,2021)
 val test10_ToJulianDay3 = toJulianDay (28,2,3456) = (4,2,3456)
+val test10_ToJulianDay4 = toJulianDay (1, 3, 300) = (29, 2, 300)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -124,6 +128,7 @@ val test10_ToJulianDay3 = toJulianDay (28,2,3456) = (4,2,3456)
  ******************************************************************************)
 val test11_ToGrigorianDay1 = toGrigorianDay (25,12,2015) = (7,1,2016)
 val test11_ToGrigorianDay2 = toGrigorianDay (1,1,2021) = (14,1,2021)
+val test11_ToGrigorianDay3 = toGrigorianDay (1,1,400) = (2,1,400)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -195,6 +200,7 @@ val test19_dateToCorrectionNums1 =
   Задание 20 firstNewMoon
  ******************************************************************************)
 val test20_FirstNewMoon1 = firstNewMoon (1,9,2016) = SOME (170823, (1,9,2016))
+val test20_FirstNewMoon2 = firstNewMoon (1,1,400) = SOME (1393882, (13,1,400))
 
 (******************************************************************************)
 
@@ -210,6 +216,9 @@ val test21_WinterSolstice3 = winterSolstice 2014 = (22, 12, 2014)
   Задание 22 chineseNewYearDate
  ******************************************************************************)
 val test22_ChineseNewYearDate1 = chineseNewYearDate 2021 = (12,2,2021)
+val test22_ChineseNewYearDate2 = chineseNewYearDate 2644 = (31,1,2644)
+val test22_ChineseNewYearDate3 = chineseNewYearDate 2345 = (3,2,2345)
+val test22_ChineseNewYearDate4 = chineseNewYearDate 2125 = (3,2,2125)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -242,6 +251,8 @@ val test26_DateToChineseYear1 =
   dateToChineseYear (1,9,1980) = ("Geng-Shen","White","Monkey","Metal")
 val test26_DateToChineseYear2 = 
   dateToChineseYear (1,9,2021) = ("Xin-Chou","White","Cow","Wrought metal")
+val test26_DateToChineseYear3 = 
+  dateToChineseYear (21,1,201) = ("Xin-Si","White","Snake","Wrought metal")
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -249,6 +260,7 @@ val test26_DateToChineseYear2 =
  ******************************************************************************)
 val test27_DateToAnimal1 = dateToAnimal (1,9,1980) = "Monkey"
 val test27_DateToAnimal2 = dateToAnimal (1,9,2021) = "Cow"
+val test27_DateToAnimal3 = dateToAnimal (21,1,201) = "Snake"
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -256,6 +268,7 @@ val test27_DateToAnimal2 = dateToAnimal (1,9,2021) = "Cow"
  ******************************************************************************)
 val test28_Animal1 = animal ("Ivan", (1,9,1980)) = "Monkey"
 val test28_Animal2 = animal ("Svetlana", (1,9,2021)) = "Cow"
+val test28_Animal3 = animal ("Ivan", (21,1,201)) = "Snake"
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -276,7 +289,6 @@ val test29_ExtractAnimal2 =
   in
     sameList (tmp, [("Alex", (1,9,1955)), ("Svetlana", (1,9,2015))])
   end 
-
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -348,6 +360,7 @@ val test33_youngestFromOldStyleAnimals1 =
                               , ["Rat", "Tiger"]
                               )
   = SOME ("Tolstoy Lev",(28,8,1828))
+
 (******************************************************************************)
 
 (****************************************************************************** 

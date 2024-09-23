@@ -65,7 +65,7 @@ fun isMonthOK (d : date) : bool =
   Задание 6 isCorrectDate
  ******************************************************************************)
 fun isCorrectDate (d : date, isJulian : bool) : bool =
-  isDayOK (d, isJulian) andalso isMonthOK d
+  isDayOK (d, isJulian) andalso isMonthOK d andalso #3 d > 0
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -127,15 +127,14 @@ fun decDateByNum (d : date, daysMinus : int, isJulian : bool) : date =
  ******************************************************************************)
 fun newStyleCorrection (date : date) : int =
   let
-    val year = #3 date
-    val month = #2 date
+    val year = #3 date - 1
     val century = year div 100
     val daysDiff = century - century div 4 - 2
   in
-    if year mod 100 > 0 orelse month > 2 orelse month = 2
-                        andalso #1 date = 29
-    then daysDiff
-    else daysDiff - 1
+    if #2 date > 2 andalso isLeapYear (year + 1, true) 
+                   andalso not (isLeapYear (year + 1, false))
+    then daysDiff + 1
+    else daysDiff
   end
 
 (******************************************************************************)
@@ -144,7 +143,7 @@ fun newStyleCorrection (date : date) : int =
   Задание 10 toJulianDay
  ******************************************************************************)
 fun toJulianDay (grigDate : date) : date =
-  decDateByNum (grigDate, newStyleCorrection grigDate, false)
+  decDateByNum (grigDate, newStyleCorrection grigDate, true)
 
 (******************************************************************************)
 
@@ -267,7 +266,7 @@ fun firstNewMoon (actDate : date) : (fixed * date) option =
     val y = #3 actDate
     fun checkMonth (m : int, y : int) = if m < 3 then y - 1 else y
     val correctionNums = 
-      dateToCorrectionNums (#1 actDate, m, checkMonth(m, y))
+      dateToCorrectionNums (#1 actDate, m, checkMonth (m, y))
     val summ = listSum (listElements (correctionNums, corrections))
     val diff = Fixed.fromInt (newStyleCorrection actDate)
     val totalSum = diff + summ
@@ -304,7 +303,7 @@ fun chineseNewYearDate (y : int) : date =
     val dayFixed = #1 (valOf (firstNewMoon (1, 12, yMinus1)))
   in
     if younger ( (Fixed.toInt dayFixed, 12, yMinus1)
-               , winterSolstice (yMinus1)
+               , winterSolstice yMinus1
                ) 
     then incDateByNum ( (Fixed.toInt dayFixed, 12, yMinus1)
                       , Fixed.toInt 2953059, false
@@ -351,7 +350,7 @@ fun chineseYear (y : int) : string * string * string * string =
     val animalName = getNthString (terrestrialIndex, terrestrialEng)
     val celestialEngName = getNthString (celestialIndex, celestialEng)
   in
-    (celestialName ^ "-" ^ terrestrialName
+    ( celestialName ^ "-" ^ terrestrialName
     , colorName, animalName, celestialEngName
     )
   end
@@ -400,11 +399,12 @@ fun extractAnimal (l : (string * date) list, animalName : string)
   if null l then []
   else
     let
-      val birthDate = #2 (hd l)
+      val head = hd l
+      val birthDate = #2 head
       val tail = tl l
     in
       if dateToAnimal birthDate = animalName then
-        (#1 (hd l), birthDate) :: extractAnimal (tail, animalName)
+        (#1 head, birthDate) :: extractAnimal (tail, animalName)
       else
         extractAnimal (tail, animalName)
     end
@@ -458,11 +458,17 @@ fun oldStyleStudents (l : (string * date) list)
 fun youngestFromOldStyleAnimals (l1 : (string * date) list, l2 : string list)
                                 : (string * date) option =
   let
-    val grigDateAns = 
-      valOf (youngestFromAnimals (oldStyleStudents l1, l2))
-   in
-     SOME (#1 grigDateAns, toJulianDay (#2 grigDateAns))
-   end
+    val grigDateAnsCheck = 
+       youngestFromAnimals (oldStyleStudents l1, l2)
+  in
+    if isSome grigDateAnsCheck then 
+      let
+        val grigDateAns = valOf grigDateAnsCheck
+      in
+        SOME (#1 grigDateAns, toJulianDay (#2 grigDateAns))
+      end
+    else NONE
+  end
 
 (******************************************************************************)
 
@@ -486,6 +492,6 @@ fun listOfStringDates (l : (string * date) list)
  ******************************************************************************)
 fun oldStyleStudentStringDates (l : (string * date) list)
                                : (string * string) list =
-  listOfStringDates (oldStyleStudents (l))
+  listOfStringDates (oldStyleStudents l)
 
 (******************************************************************************)
