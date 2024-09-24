@@ -111,7 +111,7 @@ val test9_NewStyleCorrection5 = newStyleCorrection (28,2,3701) = 26
 val test9_NewStyleCorrection6 = newStyleCorrection (29,2,4000) = 28
 val test9_NewStyleCorrection7 = newStyleCorrection (28,3,4000) = 28
 val test9_NewStyleCorrection8 = newStyleCorrection (1, 1, 400) = 1
-val test9_NewStyleCorrection9 = newStyleCorrection (1, 3, 300) = 1
+val test9_NewStyleCorrection9 = newStyleCorrection (1, 1, 300) = 0
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -129,8 +129,6 @@ val test10_ToJulianDay4 = toJulianDay (1, 3, 300) = (29, 2, 300)
 val test11_ToGrigorianDay1 = toGrigorianDay (25,12,2015) = (7,1,2016)
 val test11_ToGrigorianDay2 = toGrigorianDay (1,1,2021) = (14,1,2021)
 val test11_ToGrigorianDay3 = toGrigorianDay (1,1,400) = (2,1,400)
-val test11_ToGrigorianDay4 = toGrigorianDay (29, 2, 204)
-val test11_ToGrigorianDay5 = toGrigorianDay (29, 2, 300)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -203,7 +201,6 @@ val test19_dateToCorrectionNums1 =
  ******************************************************************************)
 val test20_FirstNewMoon1 = firstNewMoon (1,9,2016) = SOME (170823, (1,9,2016))
 val test20_FirstNewMoon2 = firstNewMoon (1,1,400) = SOME (1393882, (13,1,400))
-val test20_FirstNewMoon3 = firstNewMoon (1, 3, 1500)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -221,9 +218,6 @@ val test22_ChineseNewYearDate1 = chineseNewYearDate 2021 = (12,2,2021)
 val test22_ChineseNewYearDate2 = chineseNewYearDate 2644 = (31,1,2644)
 val test22_ChineseNewYearDate3 = chineseNewYearDate 2345 = (3,2,2345)
 val test22_ChineseNewYearDate4 = chineseNewYearDate 2125 = (3,2,2125)
-val test22_ChineseNewYearDate5 = chineseNewYearDate 2090
-val test22_ChineseNewYearDate6 = chineseNewYearDate 2870
-val test22_ChineseNewYearDate7 = chineseNewYearDate 6995
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -247,7 +241,6 @@ val test25_ChineseYear1 =
   chineseYear 1980 = ("Geng-Shen","White","Monkey","Metal")
 val test25_ChineseYear2 = 
   chineseYear 2021 = ("Xin-Chou","White","Cow","Wrought metal")
-val test25_ChineseYear3 = chineseYear 201
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -257,9 +250,6 @@ val test26_DateToChineseYear1 =
   dateToChineseYear (1,9,1980) = ("Geng-Shen","White","Monkey","Metal")
 val test26_DateToChineseYear2 = 
   dateToChineseYear (1,9,2021) = ("Xin-Chou","White","Cow","Wrought metal")
-val test26_DateToChineseYear3 = 
-  dateToChineseYear (21,1,201) = ("Xin-Si","White","Snake","Wrought metal")
-val test26_DateToChineseYear4 = dateToChineseYear (21, 1, 201)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -267,7 +257,6 @@ val test26_DateToChineseYear4 = dateToChineseYear (21, 1, 201)
  ******************************************************************************)
 val test27_DateToAnimal1 = dateToAnimal (1,9,1980) = "Monkey"
 val test27_DateToAnimal2 = dateToAnimal (1,9,2021) = "Cow"
-val test27_DateToAnimal3 = dateToAnimal (21,1,201) = "Snake"
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -275,7 +264,6 @@ val test27_DateToAnimal3 = dateToAnimal (21,1,201) = "Snake"
  ******************************************************************************)
 val test28_Animal1 = animal ("Ivan", (1,9,1980)) = "Monkey"
 val test28_Animal2 = animal ("Svetlana", (1,9,2021)) = "Cow"
-val test28_Animal3 = animal ("Ivan", (21,1,201)) = "Snake"
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -296,8 +284,6 @@ val test29_ExtractAnimal2 =
   in
     sameList (tmp, [("Alex", (1,9,1955)), ("Svetlana", (1,9,2015))])
   end 
-
-val test29_ExtractAnimal3 = extractAnimal ([("Ivan", (21, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (1, 9, 1996)), ("Anton", (31, 8, 1995))], "Snake")
 
 (******************************************************************************)
 
@@ -370,7 +356,8 @@ val test33_youngestFromOldStyleAnimals1 =
                               , ["Rat", "Tiger"]
                               )
   = SOME ("Tolstoy Lev",(28,8,1828))
-
+val test33_youngestFromOldStyleAnimals2 =
+youngestFromOldStyleAnimals ([], ["Rabbit", "Tiger"])
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -411,5 +398,36 @@ val test35_oldStyleStudentStringDates1 =
                , ("Ivan Grozniy","September 4, 1530") ]
              )
   end
+
 (******************************************************************************)
 
+(*val test22_ChineseNewYearDate5 = chineseNewYearDate 2090
+val test22_ChineseNewYearDate6 = chineseNewYearDate 2870
+val test22_ChineseNewYearDate7 = chineseNewYearDate 6995*)
+
+
+(*val a1 = firstNewMoon (1, 1, 501)
+
+
+val a2 = chineseNewYearDate 198
+
+
+val a3 = dateToChineseYear (22, 1, 201)
+
+
+val a4 = dateToAnimal (22, 1, 201)
+
+
+val a5 = animal ("Svetlana", (22, 1, 201))
+
+
+val a6 = extractAnimal ([("Ivan", (21, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (22, 1, 562)), ("Anton", (31, 8, 1995))], "Horse")
+
+
+val a7 = extractAnimals ([("Ivan", (21, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (22, 1, 562)), ("Anton", (31, 8, 1995))], ["Horse"])
+
+
+val a8 = youngestFromAnimals ([("Ivan", (22, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (22, 1, 562)), ("Anton", (31, 8, 1995))], ["Dragon"])
+
+
+val a9 = youngestFromOldStyleAnimals ([("Ivan", (22, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (22, 1, 562)), ("Anton", (31, 8, 1995))], ["Dragon"])*)

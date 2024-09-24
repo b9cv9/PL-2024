@@ -299,18 +299,20 @@ fun winterSolstice (year : int) : date =
  ******************************************************************************)
 fun chineseNewYearDate (y : int) : date =
   let
-    val yMinus1 = y - 1
+    val yMinus1  = y - 1
     val dayFixed = valOf (firstNewMoon (1, 12, yMinus1))
-    val ostatok = #1 dayFixed - Fixed.fromInt(#1 (#2 dayFixed))
+    val rest     = #1 dayFixed - Fixed.fromInt(#1 (#2 dayFixed))
+    val intDate  = (Fixed.toInt (#1 dayFixed), 12, yMinus1)
+    val winterSolsticeDate = winterSolstice yMinus1
   in
-    if younger ( (Fixed.toInt (#1 dayFixed), 12, yMinus1)
-               , winterSolstice yMinus1
-               ) 
-    then incDateByNum ( (Fixed.toInt( #1 dayFixed), 12, yMinus1)
-                      , Fixed.toInt (2953059 + ostatok), false
+    if younger ( intDate
+               , winterSolsticeDate
+               )
+    then incDateByNum ( intDate
+                      , Fixed.toInt (2953059 + rest), false
                       )
-    else incDateByNum ( (Fixed.toInt (#1 dayFixed), 12, yMinus1)
-                      , Fixed.toInt (5906118 + ostatok), false
+    else incDateByNum ( intDate
+                      , Fixed.toInt (5906118 + rest), false
                       )
   end
 
@@ -460,7 +462,7 @@ fun youngestFromOldStyleAnimals (l1 : (string * date) list, l2 : string list)
                                 : (string * date) option =
   let
     val grigDateAnsCheck = 
-       youngestFromAnimals (oldStyleStudents l1, l2)
+      youngestFromAnimals (oldStyleStudents l1, l2)
   in
     if isSome grigDateAnsCheck then 
       let
