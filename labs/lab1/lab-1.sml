@@ -151,7 +151,7 @@ fun toJulianDay (grigDate : date) : date =
   Задание 11 toGrigorianDay
  ******************************************************************************)
 fun toGrigorianDay (julianDate : date) : date =
-  incDateByNum (julianDate, newStyleCorrection julianDate, true)
+  incDateByNum (julianDate, newStyleCorrection julianDate, false)
 
 (******************************************************************************)
 
@@ -300,16 +300,17 @@ fun winterSolstice (year : int) : date =
 fun chineseNewYearDate (y : int) : date =
   let
     val yMinus1 = y - 1
-    val dayFixed = #1 (valOf (firstNewMoon (1, 12, yMinus1)))
+    val dayFixed = valOf (firstNewMoon (1, 12, yMinus1))
+    val ostatok = #1 dayFixed - Fixed.fromInt(#1 (#2 dayFixed))
   in
-    if younger ( (Fixed.toInt dayFixed, 12, yMinus1)
+    if younger ( (Fixed.toInt (#1 dayFixed), 12, yMinus1)
                , winterSolstice yMinus1
                ) 
-    then incDateByNum ( (Fixed.toInt dayFixed, 12, yMinus1)
-                      , Fixed.toInt 2953059, false
+    then incDateByNum ( (Fixed.toInt( #1 dayFixed), 12, yMinus1)
+                      , Fixed.toInt (2953059 + ostatok), false
                       )
-    else incDateByNum ( (Fixed.toInt dayFixed, 12, yMinus1)
-                      , Fixed.toInt 5906118, false
+    else incDateByNum ( (Fixed.toInt (#1 dayFixed), 12, yMinus1)
+                      , Fixed.toInt (5906118 + ostatok), false
                       )
   end
 
