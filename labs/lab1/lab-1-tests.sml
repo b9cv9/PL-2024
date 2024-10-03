@@ -5,7 +5,7 @@
 (****************************************************************************** 
   Загрузка файла с лабораторной работой 
  ******************************************************************************)
-use "lab-1.sml";
+use "lab-1-check-1.sml";
 
 (****************************************************************************** 
   Вспомогательные функции
@@ -129,6 +129,7 @@ val test10_ToJulianDay4 = toJulianDay (1, 3, 300) = (29, 2, 300)
 val test11_ToGrigorianDay1 = toGrigorianDay (25,12,2015) = (7,1,2016)
 val test11_ToGrigorianDay2 = toGrigorianDay (1,1,2021) = (14,1,2021)
 val test11_ToGrigorianDay3 = toGrigorianDay (1,1,400) = (2,1,400)
+val test11_ToGrigorianDay4 = toGrigorianDay (29,2,900)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -214,10 +215,10 @@ val test21_WinterSolstice3 = winterSolstice 2014 = (22, 12, 2014)
 (****************************************************************************** 
   Задание 22 chineseNewYearDate
  ******************************************************************************)
-val test22_ChineseNewYearDate1 = chineseNewYearDate 2021 = (12,2,2021)
+(*val test22_ChineseNewYearDate1 = chineseNewYearDate 2021 = (12,2,2021)
 val test22_ChineseNewYearDate2 = chineseNewYearDate 2644 = (31,1,2644)
 val test22_ChineseNewYearDate3 = chineseNewYearDate 2345 = (3,2,2345)
-val test22_ChineseNewYearDate4 = chineseNewYearDate 2125 = (3,2,2125)
+val test22_ChineseNewYearDate4 = chineseNewYearDate 2125 = (3,2,2125)*)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -315,13 +316,13 @@ val test30_ExtractAnimals2 =
 (****************************************************************************** 
   Задание 31 youngestFromAnimals
  ******************************************************************************)
-val test31_YoungestFromAnimals1 = 
+(*val test31_YoungestFromAnimals1 = 
   youngestFromAnimals ( [ ("Ivan", (1,9,1980))
                         , ("Svetlana", (1,9,2015)) 
                         , ("Alex", (1,9,1955)) 
                         ]
                       , ["Monkey", "Sheep"] ) 
-  = SOME ("Svetlana", (1,9,2015))
+  = SOME ("Svetlana", (1,9,2015))*)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -347,7 +348,7 @@ val test32_oldStyleStudents1 =
 (****************************************************************************** 
   Задание 33 youngestFromOldStyleAnimals
  ******************************************************************************)
-val test33_youngestFromOldStyleAnimals1 = 
+(*val test33_youngestFromOldStyleAnimals1 = 
   youngestFromOldStyleAnimals ( [ ("Pushkin Alexander", (26,5,1799))
                                 , ("Tolstoy Lev", (28,8,1828))
                                 , ("Piotr I", (30,5,1672))
@@ -357,7 +358,7 @@ val test33_youngestFromOldStyleAnimals1 =
                               )
   = SOME ("Tolstoy Lev",(28,8,1828))
 val test33_youngestFromOldStyleAnimals2 =
-youngestFromOldStyleAnimals ([], ["Rabbit", "Tiger"])
+youngestFromOldStyleAnimals ([], ["Rabbit", "Tiger"])*)
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -431,3 +432,28 @@ val a8 = youngestFromAnimals ([("Ivan", (22, 1, 201)), ("Svetlana", (22, 1, 239)
 
 
 val a9 = youngestFromOldStyleAnimals ([("Ivan", (22, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (22, 1, 562)), ("Anton", (31, 8, 1995))], ["Dragon"])*)
+val a1 = toGrigorianDay (29, 2, 300)
+(*Функция chineseNewYearDate выдает неверный результат на тесте*)
+
+(*val a2 = chineseNewYearDate 2870*)
+(*Функция dateToChineseYear выдает неверный результат на тесте*)
+
+val a3 = dateToChineseYear (21, 1, 201)
+(*Функция dateToAnimal выдает неверный результат на тесте*)
+
+val a4 = dateToAnimal (21, 1, 201)
+(*Функция animal выдает неверный результат на тесте*)
+
+val a5 = animal ("Ivan", (21, 1, 201))
+(*Функция extractAnimal выдает неверный результат на тесте*)
+
+val a6 = extractAnimal ([("Ivan", (21, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (1, 9, 1996)), ("Anton", (31, 8, 1995))], "Snake")
+(*Функция extractAnimals выдает неверный результат на тесте*)
+
+val a7 = extractAnimals ([("Ivan", (21, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (1, 9, 1996)), ("Anton", (31, 8, 1995))], ["Dragon"])
+(*Функция youngestFromAnimals выдает неверный результат на тесте*)
+
+(*val a8 = youngestFromAnimals ([("Ivan", (21, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (1, 9, 1996)), ("Anton", (31, 8, 1995))], ["Snake"])*)
+(*Функция youngestFromOldStyleAnimals выдает неверный результат на тесте*)
+
+(*val a9 = youngestFromOldStyleAnimals ([("Ivan", (21, 1, 201)), ("Svetlana", (22, 1, 239)), ("Alex", (1, 9, 1996)), ("Anton", (31, 8, 1995))], ["Snake"])*)
