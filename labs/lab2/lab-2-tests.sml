@@ -16,13 +16,17 @@ use "lab-2.sml";
 (****************************************************************************** 
   Задание 1 exprToString и pairToString
  ******************************************************************************)
-val test1_exprToString = exprToString (VAR "n") = "VAR \"n\""
+val test1_exprToString = exprToString (VAR "n")  = "VAR \"n\"" 
 val test2_exprToString = 
   exprToString (CLOSURE ([("a", INT 6), ("b", INT 9)], INT 7)) 
   = "CLOSURE ([(\"a\", INT 6), (\"b\", INT 9)], INT 7)"
-val test3_exprToString = 
+(* val test3_exprToString = 
   exprToString (PAIR (HEAD NULL, TAIL NULL)) 
-  = "PAIR (HEAD (NULL), TAIL (NULL))"
+  = "PAIR (HEAD (NULL), TAIL (NULL))" *)
+val test4_exprToString = exprToString (PAIR (HEAD NULL, TAIL NULL))
+val test5_exprToString = exprToString (FUN ( ("", "x"), ADD (VAR "a", VAR "x")))  
+val test6_exprToString = exprToString (LET (("f", PAIR (HEAD NULL, TAIL NULL)), VAR "52"))
+val test7_exprToString = exprToString (IF_GREATER (INT 6, VAR "N", PAIR (HEAD NULL, TAIL NULL), INT 54))
 (******************************************************************************)
 val test1_pairToString = pairToString ("a", INT 6) = "(\"a\", INT 6)"
 (******************************************************************************)
@@ -115,35 +119,44 @@ val test3_closureEnv = ( closureEnv (ADD (VAR "a", VAR "a")) = []
 (****************************************************************************** 
   Задание 9 envLookUp
  ******************************************************************************)
-(*val test1_envLookUp = envLookUp ([("a", INT 6), ("b", INT 10)], "b") = INT 10
+val test1_envLookUp = envLookUp ([("a", INT 6), ("b", INT 10)], "b") = INT 10
 val test2_envLookUp = ( envLookUp ([("a", INT 6), ("b", INT 10)], "c") = INT 10
                             handle Expr => true
                                  | _    => false )
 val test3_envLookUp = ( envLookUp ([], "b") = INT 10
                             handle Expr => true
-                                 | _    => false )*)
+                                 | _    => false )
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 10 evalUnderEnv
  ******************************************************************************)
-(*val test1_evalUnderEnv = evalUnderEnv (VAR "a") [("a", INT 5)] = INT 5
+val test1_evalUnderEnv = evalUnderEnv (VAR "a") [("a", INT 5)] = INT 5
 val test2_evalUnderEnv = evalUnderEnv (INT 5) [] = INT 5
-val test3_evalUnderEnv = evalUnderEnv NULL [] = NULL*)
+val test3_evalUnderEnv = evalUnderEnv NULL [] = NULL
+val test4_evalUnderEnv = evalUnderEnv (ADD (INT 4, VAR "a")) [("a", INT 13), ("l", NULL)]
+val test5_evalUnderEnv = evalUnderEnv (IF_GREATER (INT 4, INT 2, VAR "a", VAR "l")) [("a", INT 6), ("l", NULL)]
+val test6_evalUnderEnv = evalUnderEnv (PAIR (VAR "a", VAR "l")) [("a", INT 6), ("l", NULL)]
+val test7_evalUnderEnv = evalUnderEnv (HEAD (PAIR (VAR "a", VAR "l"))) [("a", INT 6), ("l", NULL)]
+val test8_evalUnderEnv = evalUnderEnv (TAIL (PAIR (VAR "a", VAR "l"))) [("a", INT 6), ("l", NULL)]
+val test9_evalUnderEnv = evalUnderEnv (IS_NULL (TAIL (PAIR (VAR "a", VAR "l")))) [("a", INT 6), ("l", NULL)]
+val test10_evalUnderEnv = evalUnderEnv ( LET ( ("a", INT 7)
+                                       , ADD (VAR "b", VAR "a") ) )
+                                       [("a", INT 6), ("b", INT 10)]
 (******************************************************************************)
 
 
 (****************************************************************************** 
   Задание 11 ifNull
  ******************************************************************************)
-(*val test1_ifNull = evalExp (ifNull (NULL, INT 5, INT 6)) = INT 5
-val test2_ifNull = evalExp (ifNull (INT 5, INT 6, NULL)) = NULL*)
+val test1_ifNull = evalExp (ifNull (NULL, INT 5, INT 6)) = INT 5
+val test2_ifNull = evalExp (ifNull (INT 5, INT 6, NULL)) = NULL
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 12 mLet
  ******************************************************************************)
-(*val test1_mLet = 
+val test1_mLet = 
   mLet [ ("a", INT 5)
        , ("b", INT 6)
        , ("c", NULL)
@@ -161,45 +174,49 @@ val test2_ifNull = evalExp (ifNull (INT 5, INT 6, NULL)) = NULL*)
                   , IF_GREATER ( VAR "a"
                                , VAR "b"
                                , VAR "d"
-                               , VAR "c" ) ) ) ) )*)
+                               , VAR "c" ) ) ) ) )
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 13 ifEq
  ******************************************************************************)
-(*val test1_ifEq = 
+val test1_ifEq = 
   evalExp (ifEq (INT 5, INT 6, NULL, PAIR (NULL, NULL)))
-  = PAIR (NULL, NULL)*)
+  = PAIR (NULL, NULL)
+val test2_ifEq = evalExp ( ifEq ( ADD (INT 1, INT 2)
+                                , INT 3
+                                , INT 5
+                                , INT 7 )) = INT 5
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 14 convertListToMUPL
  ******************************************************************************)
-(*val test1_convertListToMUPL = convertListToMUPL [] = NULL
+val test1_convertListToMUPL = convertListToMUPL [] = NULL
 val test2_convertListToMUPL = convertListToMUPL [NULL] = PAIR (NULL, NULL)
-val test3_convertListToMUPL = convertListToMUPL [VAR "a"] = PAIR (VAR "a", NULL)*)
+val test3_convertListToMUPL = convertListToMUPL [VAR "a"] = PAIR (VAR "a", NULL)
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 15 convertListFromMUPL
  ******************************************************************************)
-(*val test1_convertListFromMUPL = convertListFromMUPL NULL = []
+val test1_convertListFromMUPL = convertListFromMUPL NULL = []
 val test2_convertListFromMUPL = convertListFromMUPL (PAIR (NULL, NULL)) = [NULL]
 val test3_convertListFromMUPL = 
-  convertListFromMUPL (PAIR (VAR "a", NULL)) = [(VAR "a")]*)
+  convertListFromMUPL (PAIR (VAR "a", NULL)) = [(VAR "a")]
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 16 mMap
  ******************************************************************************)
-(*val test1_mMap = 
+val test1_mMap = 
   evalExp 
     ( CALL 
         ( CALL ( mMap 
                , FUN ( ("", "x") 
                      , ADD (VAR "x", INT 5) ) ) 
         , PAIR (INT 1, PAIR (INT 2, PAIR (INT 3, NULL))) ) )
-  = PAIR (INT 6, PAIR (INT 7, PAIR (INT 8, NULL)))*)
+  = PAIR (INT 6, PAIR (INT 7, PAIR (INT 8, NULL)))
 (******************************************************************************)
 
 (****************************************************************************** 

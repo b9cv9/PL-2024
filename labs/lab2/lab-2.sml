@@ -56,9 +56,9 @@ fun exprToString (VAR s) = String.concat ["VAR ", strToString s]
   | exprToString (CLOSURE (env, f)) = 
       let
         fun envToString [] = ""
-          | envToString ((s, e)::rest) = 
-              String.concat ["(", strToString s, ", ", exprToString e, ")", 
-                             (if null rest then "" else ", " ^ envToString rest)]
+          | envToString ((s, e) :: rest) = 
+              String.concat [ "(", strToString s, ", ", exprToString e, ")", 
+                              (if null rest then "" else ", " ^ envToString rest)]
       in
         String.concat ["CLOSURE ([", envToString env, "], ", exprToString f, ")"]
       end
@@ -154,15 +154,49 @@ fun closureEnv (CLOSURE (env, _)) = env
 (****************************************************************************** 
   Задание 9 envLookUp
  ******************************************************************************)
-fun envLookUp (lst, str) = raise Match
+fun envLookUp ([], str) = 
+      (print ("Unbound variable " ^ str ^ ".\n"); raise Expr)
+  | envLookUp ((s, v) :: rest, str) = 
+      if s = str then v
+      else envLookUp (rest, str)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 10 evalUnderEnv
  ******************************************************************************)
-fun evalUnderEnv (VAR name) env = envLookUp (env, name)
-  | evalUnderEnv _ _ = raise Match
+fun evalUnderEnv (INT n) env = INT n
+  | evalUnderEnv (VAR x) env = envLookUp (env, x)
+  | evalUnderEnv (ADD (e1, e2)) env = 
+      INT ( valOfInt (evalUnderEnv e1 env) 
+            + valOfInt (evalUnderEnv e2 env) 
+          )
+  | evalUnderEnv (IF_GREATER (e1, e2, e3, e4)) env = 
+      if valOfInt (evalUnderEnv e1 env) > valOfInt (evalUnderEnv e2 env)
+      then evalUnderEnv e3 env
+      else evalUnderEnv e4 env
+  | evalUnderEnv (PAIR (e1, e2)) env = 
+      PAIR (evalUnderEnv e1 env, evalUnderEnv e2 env)
+  | evalUnderEnv (HEAD e) env = pairHead (evalUnderEnv e env)
+  | evalUnderEnv (TAIL e) env = pairTail (evalUnderEnv e env)
+  | evalUnderEnv (IS_NULL e) env =
+      if (evalUnderEnv e env) = NULL
+      then INT 1
+      else INT 0
+  | evalUnderEnv (LET ((name, e1), e2)) env =
+      evalUnderEnv e2 ((name, evalUnderEnv e1 env) :: env)
+  | evalUnderEnv (FUN ((name, arg), body)) env =
+      CLOSURE (env, FUN ((name, arg), body))
+  | evalUnderEnv (CALL (e1, e2)) env =
+      let
+        val eUE1 = evalUnderEnv e1 env
+        val clFunV1 = closureFun eUE1
+      in
+        evalUnderEnv (funBody clFunV1) ( (funArg eUE1, evalUnderEnv e2 env)
+                                       :: (funName clFunV1, eUE1)
+                                       :: closureEnv eUE1 )
+      end
+  | evalUnderEnv NULL _ = NULL;
 
 (******************************************************************************)
 
@@ -175,42 +209,64 @@ fun evalExp expr = evalUnderEnv expr []
 (****************************************************************************** 
   Задание 11 ifNull
  ******************************************************************************)
-
+fun ifNull (e1, e2, e3) = IF_GREATER (IS_NULL e1, INT 0, e2, e3)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 12 mLet
  ******************************************************************************)
-
+fun mLet [] e = e
+  | mLet ((x, v) :: xs) e = LET ((x, v), mLet xs e)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 13 ifEq
  ******************************************************************************)
-
+fun ifEq (e1, e2, e3, e4) =
+  LET ( ("_x", e1)
+      , LET ( ("_y", e2)
+            , IF_GREATER ( ADD (VAR "_x", INT 0)
+                         , ADD (VAR "_y", INT 0)
+                         , e4
+                         , IF_GREATER ( ADD (VAR "_y", INT 0)
+                                      , ADD (VAR "_x", INT 0)
+                                      , e4
+                                      , e3 ) ) ) )
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 14 convertListToMUPL
  ******************************************************************************)
-
+fun convertListToMUPL [] = NULL
+  | convertListToMUPL (x::xs) = PAIR (x, convertListToMUPL xs)
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 15 convertListFromMUPL
  ******************************************************************************)
-
+fun convertListFromMUPL NULL = []
+  | convertListFromMUPL (PAIR (x, xs)) = x :: convertListFromMUPL xs
+  | convertListFromMUPL _ = raise Expr
 
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 16 mMap
  ******************************************************************************)
-
+val mMap = 
+  FUN (("f", "lst"),
+    IF_GREATER ( IS_NULL (VAR "lst")
+               , INT 0
+               , NULL
+               , PAIR ( CALL (VAR "f", HEAD (VAR "lst"))
+                      , CALL (CALL (VAR "mMap", VAR "f"), TAIL (VAR "lst"))
+                      )
+               )
+      )
 
 (******************************************************************************)
 
