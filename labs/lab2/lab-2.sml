@@ -55,12 +55,10 @@ fun exprToString (VAR s) = String.concat ["VAR ", strToString s]
   | exprToString (IS_NULL e) = String.concat ["IS_NULL (", exprToString e, ")"]
   | exprToString (CLOSURE (env, f)) = 
       let
-        fun envToString [] = ""
-          | envToString ((s, e) :: rest) = 
-              String.concat [ "(", strToString s, ", ", exprToString e, ")", 
-                              (if null rest then "" else ", " ^ envToString rest)]
+        val nStr = String.concatWith ", " (map pairToString env)
+        val bStr = exprToString f
       in
-        String.concat ["CLOSURE ([", envToString env, "], ", exprToString f, ")"]
+        "CLOSURE ([" ^ bStr ^ "], " ^ bStr ^ ")"
       end
 and pairToString (var, expr) = String.concat ["(", strToString var, ", ", exprToString expr, ")"]
 
@@ -155,7 +153,7 @@ fun closureEnv (CLOSURE (env, _)) = env
   Задание 9 envLookUp
  ******************************************************************************)
 fun envLookUp ([], str) = 
-      (print ("Unbound variable " ^ str ^ ".\n"); raise Expr)
+  (print ("Unbound variable " ^ str ^ ".\n"); raise Expr)
   | envLookUp ((s, v) :: rest, str) = 
       if s = str then v
       else envLookUp (rest, str)
@@ -169,8 +167,7 @@ fun evalUnderEnv (INT n) env = INT n
   | evalUnderEnv (VAR x) env = envLookUp (env, x)
   | evalUnderEnv (ADD (e1, e2)) env = 
       INT ( valOfInt (evalUnderEnv e1 env) 
-            + valOfInt (evalUnderEnv e2 env) 
-          )
+            + valOfInt (evalUnderEnv e2 env) )
   | evalUnderEnv (IF_GREATER (e1, e2, e3, e4)) env = 
       if valOfInt (evalUnderEnv e1 env) > valOfInt (evalUnderEnv e2 env)
       then evalUnderEnv e3 env
@@ -192,11 +189,11 @@ fun evalUnderEnv (INT n) env = INT n
         val eUE1 = evalUnderEnv e1 env
         val clFunV1 = closureFun eUE1
       in
-        evalUnderEnv (funBody clFunV1) ( (funArg eUE1, evalUnderEnv e2 env)
+        evalUnderEnv (funBody clFunV1) ( (funArg clFunV1, evalUnderEnv e2 env)
                                        :: (funName clFunV1, eUE1)
                                        :: closureEnv eUE1 )
       end
-  | evalUnderEnv NULL _ = NULL;
+  | evalUnderEnv (NULL) _ = NULL;
 
 (******************************************************************************)
 
@@ -227,11 +224,11 @@ fun mLet [] e = e
 fun ifEq (e1, e2, e3, e4) =
   LET ( ("_x", e1)
       , LET ( ("_y", e2)
-            , IF_GREATER ( ADD (VAR "_x", INT 0)
-                         , ADD (VAR "_y", INT 0)
+            , IF_GREATER ( VAR "_x"
+                         , VAR "_y"
                          , e4
-                         , IF_GREATER ( ADD (VAR "_y", INT 0)
-                                      , ADD (VAR "_x", INT 0)
+                         , IF_GREATER ( VAR "_y"
+                                      , VAR "_x"
                                       , e4
                                       , e3 ) ) ) )
 
@@ -241,7 +238,7 @@ fun ifEq (e1, e2, e3, e4) =
   Задание 14 convertListToMUPL
  ******************************************************************************)
 fun convertListToMUPL [] = NULL
-  | convertListToMUPL (x::xs) = PAIR (x, convertListToMUPL xs)
+  | convertListToMUPL (x :: xs) = PAIR (x, convertListToMUPL xs)
 
 (******************************************************************************)
 
@@ -250,7 +247,6 @@ fun convertListToMUPL [] = NULL
  ******************************************************************************)
 fun convertListFromMUPL NULL = []
   | convertListFromMUPL (PAIR (x, xs)) = x :: convertListFromMUPL xs
-  | convertListFromMUPL _ = raise Expr
 
 (******************************************************************************)
 
@@ -258,14 +254,15 @@ fun convertListFromMUPL NULL = []
   Задание 16 mMap
  ******************************************************************************)
 val mMap = 
-  FUN (("f", "lst"),
-    IF_GREATER ( IS_NULL (VAR "lst")
-               , INT 0
-               , NULL
-               , PAIR ( CALL (VAR "f", HEAD (VAR "lst"))
-                      , CALL (CALL (VAR "mMap", VAR "f"), TAIL (VAR "lst"))
-                      )
-               )
+  FUN ( ("func", "arg")
+      , FUN ( ("", "lst")
+            , ifNull ( VAR "lst"
+                     , NULL
+                     , PAIR ( CALL (VAR "arg", HEAD (VAR "lst"))
+                            , CALL ( CALL (VAR "func", VAR "arg")
+                                   , TAIL (VAR "lst") ) )
+                     )
+            )
       )
 
 (******************************************************************************)

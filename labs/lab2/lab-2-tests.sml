@@ -16,17 +16,20 @@ use "lab-2.sml";
 (****************************************************************************** 
   Задание 1 exprToString и pairToString
  ******************************************************************************)
+
 val test1_exprToString = exprToString (VAR "n")  = "VAR \"n\"" 
 val test2_exprToString = 
   exprToString (CLOSURE ([("a", INT 6), ("b", INT 9)], INT 7)) 
   = "CLOSURE ([(\"a\", INT 6), (\"b\", INT 9)], INT 7)"
-(* val test3_exprToString = 
+val test3_exprToString = 
   exprToString (PAIR (HEAD NULL, TAIL NULL)) 
-  = "PAIR (HEAD (NULL), TAIL (NULL))" *)
+  = "PAIR (HEAD (NULL), TAIL (NULL))"
 val test4_exprToString = exprToString (PAIR (HEAD NULL, TAIL NULL))
-val test5_exprToString = exprToString (FUN ( ("", "x"), ADD (VAR "a", VAR "x")))  
+val test5_exprToString = exprToString (FUN (("", "x"), ADD (VAR "a", VAR "x")))  
 val test6_exprToString = exprToString (LET (("f", PAIR (HEAD NULL, TAIL NULL)), VAR "52"))
 val test7_exprToString = exprToString (IF_GREATER (INT 6, VAR "N", PAIR (HEAD NULL, TAIL NULL), INT 54))
+
+
 (******************************************************************************)
 val test1_pairToString = pairToString ("a", INT 6) = "(\"a\", INT 6)"
 (******************************************************************************)
@@ -66,7 +69,6 @@ val test3_funBody = ( funBody (ADD (VAR "a", VAR "a")) = INT 4
                         handle Expr => true
                              | _    => false )
 (******************************************************************************)
-
 (****************************************************************************** 
   Задание 5 pairHead
  ******************************************************************************)
@@ -134,18 +136,13 @@ val test3_envLookUp = ( envLookUp ([], "b") = INT 10
 val test1_evalUnderEnv = evalUnderEnv (VAR "a") [("a", INT 5)] = INT 5
 val test2_evalUnderEnv = evalUnderEnv (INT 5) [] = INT 5
 val test3_evalUnderEnv = evalUnderEnv NULL [] = NULL
-val test4_evalUnderEnv = evalUnderEnv (ADD (INT 4, VAR "a")) [("a", INT 13), ("l", NULL)]
-val test5_evalUnderEnv = evalUnderEnv (IF_GREATER (INT 4, INT 2, VAR "a", VAR "l")) [("a", INT 6), ("l", NULL)]
-val test6_evalUnderEnv = evalUnderEnv (PAIR (VAR "a", VAR "l")) [("a", INT 6), ("l", NULL)]
-val test7_evalUnderEnv = evalUnderEnv (HEAD (PAIR (VAR "a", VAR "l"))) [("a", INT 6), ("l", NULL)]
-val test8_evalUnderEnv = evalUnderEnv (TAIL (PAIR (VAR "a", VAR "l"))) [("a", INT 6), ("l", NULL)]
-val test9_evalUnderEnv = evalUnderEnv (IS_NULL (TAIL (PAIR (VAR "a", VAR "l")))) [("a", INT 6), ("l", NULL)]
-val test10_evalUnderEnv = evalUnderEnv ( LET ( ("a", INT 7)
-                                       , ADD (VAR "b", VAR "a") ) )
-                                       [("a", INT 6), ("b", INT 10)]
+val test4_evalUnderEnv = evalUnderEnv (ADD (INT 4, VAR "a")) [("a", INT 6), ("l", NULL)]
+val test5_evalUnderEnv = evalUnderEnv (CALL (VAR "f", VAR "x"))
+[ ("x", INT 4)
+, ("a", INT 8)
+, ("f", CLOSURE ([("a", INT 6), ("x", INT 10)], FUN (("", "x"), ADD (VAR "a", VAR "x"))))
+]
 (******************************************************************************)
-
-
 (****************************************************************************** 
   Задание 11 ifNull
  ******************************************************************************)
@@ -175,6 +172,12 @@ val test1_mLet =
                                , VAR "b"
                                , VAR "d"
                                , VAR "c" ) ) ) ) )
+val test2_mLet = evalExp ( mLet [ ("a", ADD (INT 1, INT 2))
+, ("b", INT 3)
+, ("c", INT 5)
+]
+(IF_GREATER (VAR "a", VAR "b", VAR "c", VAR "a"))
+) = INT 3
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -182,11 +185,12 @@ val test1_mLet =
  ******************************************************************************)
 val test1_ifEq = 
   evalExp (ifEq (INT 5, INT 6, NULL, PAIR (NULL, NULL)))
-  = PAIR (NULL, NULL)
+  = PAIR (NULL, NULL) 
 val test2_ifEq = evalExp ( ifEq ( ADD (INT 1, INT 2)
                                 , INT 3
                                 , INT 5
                                 , INT 7 )) = INT 5
+
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -195,6 +199,8 @@ val test2_ifEq = evalExp ( ifEq ( ADD (INT 1, INT 2)
 val test1_convertListToMUPL = convertListToMUPL [] = NULL
 val test2_convertListToMUPL = convertListToMUPL [NULL] = PAIR (NULL, NULL)
 val test3_convertListToMUPL = convertListToMUPL [VAR "a"] = PAIR (VAR "a", NULL)
+val test4_convertListToMUPL = convertListToMUPL [VAR "a", INT 5] = 
+  PAIR (VAR "a", PAIR (INT 5, NULL))
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -204,6 +210,11 @@ val test1_convertListFromMUPL = convertListFromMUPL NULL = []
 val test2_convertListFromMUPL = convertListFromMUPL (PAIR (NULL, NULL)) = [NULL]
 val test3_convertListFromMUPL = 
   convertListFromMUPL (PAIR (VAR "a", NULL)) = [(VAR "a")]
+val test4_convertListFromMUPL = convertListFromMUPL (PAIR (INT 1, PAIR (INT 2, PAIR (INT 3, PAIR (INT 4, PAIR (INT 5, NULL)))))) =
+  [INT 1, INT 2, INT 3, INT 4, INT 5]
+
+
+
 (******************************************************************************)
 
 (****************************************************************************** 
@@ -217,39 +228,4 @@ val test1_mMap =
                      , ADD (VAR "x", INT 5) ) ) 
         , PAIR (INT 1, PAIR (INT 2, PAIR (INT 3, NULL))) ) )
   = PAIR (INT 6, PAIR (INT 7, PAIR (INT 8, NULL)))
-(******************************************************************************)
-
-(****************************************************************************** 
-  Задание 17 mMapAddN
- ******************************************************************************)
-(*val test1_mMapAddN = 
-  evalExp 
-    ( CALL ( mMapAddN (INT 5)
-           , PAIR (INT 1, PAIR (INT 2, PAIR (INT 3, NULL))) ) )
-  = PAIR (INT 6, PAIR (INT 7, PAIR (INT 8, NULL)))*)
-(******************************************************************************)
-
-(****************************************************************************** 
-  Задание 18 multAnyXPosY
- ******************************************************************************)
-(*val test1_multAnyXPosY =
-  evalExp (CALL (CALL (multAnyXPosY, INT 1), INT 0)) = INT 0*)
-(******************************************************************************)
-
-(****************************************************************************** 
-  Задание 19 fact
- ******************************************************************************)
-(*val test1_fact = evalExp (CALL (fact, INT 5)) = INT 120*)
-(******************************************************************************)
-
-(****************************************************************************** 
-  Задание 20 delDuplicates
- ******************************************************************************)
-(*val test1_delDuplicates = evalExp (CALL (delDuplicates, NULL)) = NULL
-val test2_delDuplicates = 
-  evalExp 
-    ( CALL 
-        ( delDuplicates
-        , PAIR (INT 1, (PAIR (INT 1, PAIR (INT 1, NULL)))) ) ) 
-  = PAIR (INT 1, NULL)*)
 (******************************************************************************)
