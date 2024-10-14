@@ -43,24 +43,61 @@ fun strToString str = String.concat ["\"", str, "\""]
  ******************************************************************************)
 fun exprToString (VAR s) = String.concat ["VAR ", strToString s]
   | exprToString (INT n) = String.concat ["INT ", Int.toString n]
-  | exprToString (ADD (e1, e2)) = String.concat ["ADD (", exprToString e1, ", ", exprToString e2, ")"]
-  | exprToString (IF_GREATER (e1, e2, e3, e4)) = String.concat ["IF_GREATER (", exprToString e1, ", ", exprToString e2, ", ", exprToString e3, ", ", exprToString e4, ")"]
-  | exprToString (FUN ((s1, s2), e)) = String.concat ["FUN ((", strToString s1, ", ", strToString s2, "), ", exprToString e, ")"]
-  | exprToString (CALL (e1, e2)) = String.concat ["CALL (", exprToString e1, ", ", exprToString e2, ")"]
-  | exprToString (LET ((s, e1), e2)) = String.concat ["LET ((", strToString s, ", ", exprToString e1, "), ", exprToString e2, ")"]
-  | exprToString (PAIR (e1, e2)) = String.concat ["PAIR (", exprToString e1, ", ", exprToString e2, ")"]
-  | exprToString (HEAD e) = String.concat ["HEAD (", exprToString e, ")"]
+  | exprToString (ADD (e1, e2)) = String.concat [ "ADD ("
+                                                , exprToString e1
+                                                , ", "
+                                                , exprToString e2
+                                                , ")" ]
+  | exprToString (IF_GREATER (e1, e2, e3, e4)) = 
+      String.concat [ "IF_GREATER ("
+                    , exprToString e1
+                    , ", "
+                    , exprToString e2
+                    , ", "
+                    , exprToString e3
+                    , ", "
+                    , exprToString e4
+                    , ")" ]
+  | exprToString (FUN ((s1, s2), e)) = String.concat [ "FUN (("
+                                                     , strToString s1
+                                                     , ", "
+                                                     , strToString s2
+                                                     , "), "
+                                                     , exprToString e
+                                                     , ")" ]
+  | exprToString (CALL (e1, e2)) = String.concat [ "CALL ("
+                                                 , exprToString e1
+                                                 , ", "
+                                                 , exprToString e2
+                                                 , ")" ]
+  | exprToString (LET ((s, e1), e2)) = String.concat [ "LET (("
+                                                     , strToString s
+                                                     , ", "
+                                                     , exprToString e1
+                                                     , "), "
+                                                     , exprToString e2
+                                                     , ")" ]
+  | exprToString (PAIR (e1, e2)) = String.concat [ "PAIR ("
+                                                 , exprToString e1
+                                                 , ", "
+                                                 , exprToString e2
+                                                 , ")" ]
+  | exprToString (HEAD e) = String.concat [ "HEAD ("
+                                          , exprToString e
+                                          , ")" ]
   | exprToString (TAIL e) = String.concat ["TAIL (", exprToString e, ")"]
   | exprToString NULL = "NULL"
-  | exprToString (IS_NULL e) = String.concat ["IS_NULL (", exprToString e, ")"]
+  | exprToString (IS_NULL e) =
+      String.concat ["IS_NULL (", exprToString e, ")"]
   | exprToString (CLOSURE (env, f)) = 
       let
         val nStr = String.concatWith ", " (map pairToString env)
         val bStr = exprToString f
       in
-        "CLOSURE ([" ^ bStr ^ "], " ^ bStr ^ ")"
+        "CLOSURE ([" ^ nStr ^ "], " ^ bStr ^ ")"
       end
-and pairToString (var, expr) = String.concat ["(", strToString var, ", ", exprToString expr, ")"]
+and pairToString (var, expr) = 
+  String.concat ["(", strToString var, ", ", exprToString expr, ")"]
 
 (******************************************************************************)
 
@@ -193,7 +230,8 @@ fun evalUnderEnv (INT n) env = INT n
                                        :: (funName clFunV1, eUE1)
                                        :: closureEnv eUE1 )
       end
-  | evalUnderEnv (NULL) _ = NULL;
+  | evalUnderEnv (NULL) _ = NULL
+  | evalUnderEnv (CLOSURE (env2, f)) env = CLOSURE (env2, f)
 
 (******************************************************************************)
 
@@ -270,14 +308,26 @@ val mMap =
 (****************************************************************************** 
   Задание 17 mMapAddN
  ******************************************************************************)
-
-
+fun mMapAddN (INT n) = 
+  CALL (mMap, FUN (("", "x"), ADD (VAR "x", INT n )))
 (******************************************************************************)
 
 (****************************************************************************** 
   Задание 18 multAnyXPosY
  ******************************************************************************)
-
+val multAnyXPosY =
+  FUN ( ("mult", "x")
+      , FUN ( ("", "y")
+      , IF_GREATER ( VAR "y"
+                   , INT 0
+                   , ADD ( VAR "x"
+                         , CALL ( CALL (VAR "mult", VAR "x")
+                                , ADD (VAR "y", INT ~1) )
+                         )
+                   , INT 0
+                   )
+            )
+      )
 
 (******************************************************************************)
 
